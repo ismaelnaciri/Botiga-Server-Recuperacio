@@ -62,7 +62,7 @@ app.get("/productes", async (req, res) => {
 
 app.post('/compres', async (req, res) => {
   let date = new Date();
-  const formattedDate = `${date.getFullYear()}-${date.getMonth()}-${date.getDate()} ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
+  const formattedDate = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()} ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
   console.log("formattedDate | ", formattedDate);
 
   const items = req.body.productes;
@@ -86,7 +86,7 @@ app.post('/compres', async (req, res) => {
 });
 
 app.get("/historialCompres", async (req, res) => {
-  Compre.findAll().then((data) => {
+  Compres.findAll().then((data) => {
     res.json(data)
   }).catch((error) => {
     console.error("Historial el producte | ", error)
@@ -107,15 +107,15 @@ const storage = multer.diskStorage({
 
 const upload = multer({storage: storage});
 
-app.post('/signup', async (req, res) => {
-  const userResponse = await admin.auth().createUser({
-    email: req.body.email,
-    password: req.body.password,
-    emailVerified: false,
-    disabled: false,
-  });
-  res.json(userResponse);
-})
+// app.post('/signup', async (req, res) => {
+//   const userResponse = await admin.auth().createUser({
+//     email: req.body.email,
+//     password: req.body.password,
+//     emailVerified: false,
+//     disabled: false,
+//   });
+//   res.json(userResponse);
+// })
 
 
 app.post('/login', async (req, res) => {
@@ -142,16 +142,16 @@ app.post('/login', async (req, res) => {
   }
 });
 
-app.post('/datausers', async (req, res) => {
-  await admin.auth().createUser({
-    Adreca: req.body.Adreca,
-    Cognoms: req.body.Cognoms,
-    Correu: req.body.Correu,
-    Nom: req.body.Nom,
-    Telefon: req.body.Telefon,
-    Rol: req.body.Rol
-  })
-})
+// app.post('/datausers', async (req, res) => {
+//   await admin.auth().createUser({
+//     Adreca: req.body.Adreca,
+//     Cognoms: req.body.Cognoms,
+//     Correu: req.body.Correu,
+//     Nom: req.body.Nom,
+//     Telefon: req.body.Telefon,
+//     Rol: req.body.Rol
+//   })
+// })
 
 
 app.post('/datausersdelete', (req, res) => {
@@ -224,6 +224,53 @@ app.get('/api/firebase', async (req, res) => {
   const doc = await conn.get();
   const document = doc.data();
   res.json(document);
+});
+
+app.post("/register", async (req, res) => {
+  if (req.body) {
+    try {
+      const conn = db.collection("iniciar-registrar").doc("8X8qyKzfzPYPdqlUA6Ut");
+      const doc = await conn.get();
+      let usersArray = doc.get("client")
+      usersArray.push(req.body.user);
+
+      const updatedDoc = await conn.update("client", usersArray);
+      res.status(200).send({
+        message: "correctly inserted :)"
+      });
+    } catch (e) {
+      console.log(`error | ${e}`);
+    }
+  }
+});
+
+
+app.get("/dadescompres", async (req, res) => {
+
+});
+
+app.post("/crearProducte", async (req, res) => {
+  if (req.body) {
+    let producte = req.body.producte
+
+    await Product.create({
+      idproducte: producte.idproducte,
+      nom: producte.nom,
+      preu: producte.preu,
+      img: producte.img,
+      tipus: producte.tipus,
+      createdAt: producte.createdAt,
+      updatedAt: producte.updatedAt,
+      oferta: producte.oferta,
+    }).then(() => {
+      res.status(200).send({
+        code: 200,
+        message: "producte successfully created!"
+      })
+    }).catch((error) => {
+      console.log("Error inserting producte, ", error);
+    });
+  }
 })
 
 // app.post('/api/login',async (req,res)=> {
